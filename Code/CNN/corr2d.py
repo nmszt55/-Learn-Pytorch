@@ -11,5 +11,5 @@ def corr2d(x: torch.Tensor, k: torch.Tensor) -> torch.Tensor:
     y = torch.zeros((x.shape[0] - h + 1, x.shape[1] - w + 1))
     for i in range(y.shape[0]):
         for j in range(y.shape[1]):
-            y[i][j] = (x[i:i + h][j: j+w] * k).sum().item()
+            y[i][j] = (x[i:i + h, j: j+w] * k).sum()
     return y
