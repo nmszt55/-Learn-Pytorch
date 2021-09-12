@@ -1,3 +1,7 @@
+"""
+使用1*2的卷积核，进行横向边界判断
+"""
+
 from Code.CNN.Conv2D import *
 
 x = torch.ones((6, 8))
