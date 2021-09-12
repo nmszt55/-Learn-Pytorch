@@ -54,9 +54,9 @@
 
 参数：
 
-tensors: 多个tensor
+​	tensors: 多个tensor
 
-dim: 维度，按照维度进行拼接, dim=0：行拼接， dim=1:列拼接
+​	dim: 维度，按照维度进行拼接, dim=0：行拼接， dim=1:列拼接
 
 
 
