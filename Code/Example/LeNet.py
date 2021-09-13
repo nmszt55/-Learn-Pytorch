@@ -1,6 +1,10 @@
 import torch
 from torch import nn, optim
 
+from Code.Utils.train import train
+from Code.Utils.load_data import get_data_fashion_mnist
+
+
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 
@@ -28,10 +32,15 @@ class LeNet(nn.Module):
 
     def forward(self, img):
         feature = self.conv(img)
-        output = self.fc(feature.view(img.shape[0]))
+        output = self.fc(feature.view(img.shape[0], -1))
         return output
 
 
 if __name__ == '__main__':
     net = LeNet()
-    print(net)
+    batch_size = 256
+    train_iter, test_iter = get_data_fashion_mnist(batch_size)
+    lr = 0.01
+    num_epoch = 5
+    optimizer = optim.Adam(net.parameters(), lr)
+    train(net, train_iter, test_iter, batch_size, optimizer, device, num_epoch)

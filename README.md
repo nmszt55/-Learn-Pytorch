@@ -1,5 +1,7 @@
-# Learn-Pytorch
+# Learn-Deeplearning-by-Torch
 Building from 2021-09
+
+正在写作中，由于之前读过一部分，当时写到本地后电脑挂掉了，数据丢失了，所以线性回归相关的内容会有缺失，有没有人能帮忙补上啊。。或者后面二刷的时候我补上。
 
 # 目录
 
