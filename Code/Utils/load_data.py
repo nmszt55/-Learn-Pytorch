@@ -10,19 +10,27 @@ CUR = os.path.dirname(os.path.abspath(__file__))
 PROJECT_ROOT = os.path.dirname(os.path.dirname(CUR))
 
 
-def get_data_fashion_mnist(batch_size):
+def get_data_fashion_mnist(batch_size, resize=None):
+    trans = []
+    # 重新设置size
+    if resize:
+        trans.append(transforms.Resize(size=resize))
+    trans.append(transforms.ToTensor())
+    transform = transforms.Compose(trans)
+
     train_mnist = torchvision.datasets.FashionMNIST(
         root=os.path.join(PROJECT_ROOT, "Datasets", "Fashion-Mnist"),
         train=True,
         download=True,
-        transform=transforms.ToTensor(),
+        transform=transform,
     )
     test_mnist = torchvision.datasets.FashionMNIST(
         root=os.path.join(PROJECT_ROOT, "Datasets", "Fashion-Mnist"),
         train=False,
         download=True,
-        transform=transforms.ToTensor(),
+        transform=transform,
     )
+
     if sys.platform.startswith("win"):
         num_worker = 0
     else:
