@@ -25,6 +25,8 @@ def train(net, train_iter, test_iter, batch_size, optimizer, device, num_epoch):
             X = X.to(device)
             y = y.to(device)
             y_hat = net(X)
+            print(y.shape)
+            print(y_hat.shape)
             l = loss(y_hat, y)
             # 由于导数会累积，每次计算前清零
             optimizer.zero_grad()
