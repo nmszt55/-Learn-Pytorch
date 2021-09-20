@@ -15,7 +15,7 @@ fc_hidden_units = 4096
 
 def vgg_11(conv_arch, fc_features, fc_hidden_units):
     net = torch.nn.Sequential()
-    for i, (num_conv, in_channel, out_channel) in enumerate(conv_arch):
+    for i, (num_conv, in_channel, out_channel) in enumerate(conv_arch, start=1):
         # 由于池化层的关系，每次VGG输出的形状，会比输入的形状减小1/2
         net.add_module("VGG_%d" % i, vgg_block(num_conv, in_channel, out_channel))
 

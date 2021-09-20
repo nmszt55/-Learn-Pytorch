@@ -9,5 +9,5 @@ class FlattenLayer(nn.Module):
         super(FlattenLayer, self).__init__()
 
     def forward(self, X):
-        return X.view(1, -1)
+        return X.view(X.shape[0], -1)
 
