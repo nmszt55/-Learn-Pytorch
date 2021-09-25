@@ -26,7 +26,7 @@ def batch_norm(is_training, X, gamma, beta, moving_mean, moving_var, eps, moment
         # 计算卷积层
         else:
             # 合并批次维度，除了通道维，其他维度压缩成平均值
-            mean = X.mead(dim=0, keepdim=True).mean(dim=2, keepdim=True).mean(dim=3, keepdim=True)
+            mean = X.mean(dim=0, keepdim=True).mean(dim=2, keepdim=True).mean(dim=3, keepdim=True)
             var = ((X - mean) ** 2).mean(dim=0, keepdim=True).mean(dim=2, keepdim=True).mean(dim=3, keepdim=True)
         x_hat = (X - mean) / torch.sqrt(var + eps)
         moving_mean = momentum * moving_mean + (1.0 - momentum) * mean
@@ -51,8 +51,8 @@ class BatchNorm(torch.nn.Module):
 
     def forward(self, X):
         if self.moving_mean.device != X.device:
-            self.moving_mean = self.moving_mean.To(X.device)
-            self.moving_var = self.moving_var.To(X.device)
+            self.moving_mean = self.moving_mean.to(X.device)
+            self.moving_var = self.moving_var.to(X.device)
         # Module默认的training属性为True
         Y, moving_mean, moving_var = batch_norm(self.training, X, self.gamma, self.beta, self.moving_mean,
                                                 self.moving_var, 1e-5, momentum=0.9)

@@ -73,6 +73,26 @@ net(X.to("cuda"))
 
 
 
+## 卷积层初始化
+
+**torch.nn.Conv2d(in_channel:[int, tuple], out_channel:[int, tuple], kelnel_size:[int, tuple], stride=1, padding=0)**
+
+说明：创建一个卷积层
+
+参数：
+
+in_channel: 输入通道数
+
+out_channel: 输出通道数
+
+kelnel_size: 卷积核大小，int值代表长度一致的正方形核，否则为高宽为(int, int)的核
+
+stride：卷积核移动一次的步长，默认为1
+
+padding: 对原始数据进行补零的大小，默认不补零，int代表4个方向补零，(int, int)代表高宽补零
+
+
+
 # torch.nn.Module方法
 
 ## 转换计算设备
@@ -149,7 +169,7 @@ optimizer = opt.SGD(net.parameters(), lr=0.01)
 参数：
 
 	1. 参数列表
- 	2. 学习率
+	2. 学习率
 
 
 
