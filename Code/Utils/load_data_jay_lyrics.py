@@ -32,12 +32,13 @@ def string2idx(string, dic):
 def load_data_jay_lyrics():
     """加载歌词数据集"""
     strings = get_lyric_string()[:10000]
-    string_list = strings.replace('\n', ' ').replace('\r', ' ')
-    string_list = string_list[0:10000]
-    dic = get_string_dict(string_list)
-    vocab_size = len(dic)
-    indics = [dic[x] for x in strings]
-    return indics, dic, string_list, vocab_size
+    string_chars = strings.replace('\n', ' ').replace('\r', ' ')
+    string_chars = string_chars[0:10000]
+    idx2char = list(set(string_chars))
+    char2idx = get_string_dict(idx2char)
+    vocab_size = len(char2idx)
+    indics = [char2idx[x] for x in string_chars]
+    return indics, char2idx, idx2char, vocab_size
 
 
 def data_iter_random(index_list, batch_size, num_steps, device=None):

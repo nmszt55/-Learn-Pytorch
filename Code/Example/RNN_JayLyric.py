@@ -4,6 +4,7 @@ import torch.nn.functional as F
 
 from torch import nn, optim
 from Code.Utils.load_data_jay_lyrics import load_data_jay_lyrics
+from Code.Utils.one_hot import to_onehot
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
@@ -39,3 +40,14 @@ def rnn(input, state, params):
     for x in input:
         # tanh激活函数
         H = torch.tanh(torch.matmul(x, W_xh) + torch.matmul(H, W_hh) + b_h)
+        Y = torch.mm(H, W_hq) + b_q
+        outputs.append(Y)
+    return outputs, (H,)
+
+
+if __name__ == '__main__':
+    from Code.Utils.predict_rnn import predict_rnn
+    params = get_params()
+    state = init_rnn_state(1, num_hidden, device)
+    res = predict_rnn("分开", 10, rnn, params, init_rnn_state, num_hidden, vocab_size, device, idx2char, char2idx)
+    print(res)

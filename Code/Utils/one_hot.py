@@ -16,6 +16,6 @@ def to_onehot(X, n_class):
 
 if __name__ == '__main__':
     from pprint import pprint
-    x = torch.arange(10).view(2, 5)
+    x = torch.tensor([[3]])
     print(x)
     pprint(to_onehot(x, 10))
