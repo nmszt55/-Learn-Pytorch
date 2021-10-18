@@ -1,5 +1,6 @@
 """
-该示例代码使用周杰伦的歌词进行语言模型训练，并生成歌词
+该代码为加载周杰伦歌词数据的方法包，用于RNN训练
+可以查看Code/Example/RNN_JayLyric.py,此模块实现了RNN的训练
 """
 import zipfile
 import os

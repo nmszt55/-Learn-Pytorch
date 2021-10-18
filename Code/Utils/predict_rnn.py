@@ -1,6 +1,11 @@
+"""
+此模块包含了RNN的训练方法
+"""
 import torch
+import time
 
 from Code.Utils.one_hot import to_onehot
+from Code.Utils.load_data_jay_lyrics import data_iter_random, data_iter_consecutive
 
 
 def init_rnn_state(batch_size, num_hidden, device):
@@ -46,3 +51,53 @@ def grad_clipping(params, theta, device):
     if norm > theta:
         for param in params:
             param.grad.data *= (theta / norm)
+
+
+def rnn(input, state, params):
+    """实现rnn的循环计算"""
+    W_xh, W_hh, b_h, W_hq, b_q = params
+    H, = state
+    outputs = []
+    for x in input:
+        # tanh激活函数
+        H = torch.tanh(torch.matmul(x, W_xh) + torch.matmul(H, W_hh) + b_h)
+        Y = torch.mm(H, W_hq) + b_q
+        outputs.append(Y)
+    return outputs, (H,)
+
+
+def train_and_predict_rnn(rnn, get_params, init_rnn_state, num_hiddens, vocab_size,
+                          device, corpus_indices, idx_to_char, char_to_idx, is_random_iter,
+                          num_epoch, num_step, lr, clipping_theta, batch_size, pred_period,
+                          pred_len, prefixes):
+    if is_random_iter:
+        # 随机采样
+        data_iter_fn = data_iter_random
+    else:
+        # 连续采样
+        data_iter_fn = data_iter_consecutive
+    params = get_params()
+    loss = torch.nn.CrossEntropyLoss()
+    for epoch in range(num_epoch):
+        if not is_random_iter:
+            state = init_rnn_state(batch_size, num_hiddens, device)
+        # 总损失，计数，计时
+        l_sum, n, start = 0.0, 0, time.time()
+        data_iter = data_iter_fn(corpus_indices, batch_size, num_step, device)
+        for x, y in data_iter:
+            if is_random_iter:
+                # 随机采样的批次数据连续，所以每次训练完成之后重设初始状态
+                state = init_rnn_state()
+            else:
+                for s in state:
+                    # 分离计算图，减轻训练复杂度
+                    s.detach_()
+            inputs = to_onehot(x, vocab_size)
+            # outputs有num_steps个形状为(batch_size, vocab_size)的list
+            output, state = rnn(inputs, state, params)
+            # 将list的所有tensor按照行为单位进行拼接
+            output = torch.cat(output, dim=0)
+            # 计算完成后，Y是一个长度为batch*num_steps的向量
+            Y = torch.transpose(y, 0, 1).contigurous().view(-1)
+            # 交叉熵损失计算误差
+            l = loss(output, Y.long())
