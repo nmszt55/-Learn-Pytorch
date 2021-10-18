@@ -1,5 +1,5 @@
 # Learn-Deeplearning-by-Torch
-Building from 2021-09
+Building from 2021
 
 本书是自己的学习笔记，内容全部来自于阅读[《动手学深度学习》](https://github.com/ShusenTang/Dive-into-DL-PyTorch)
 
