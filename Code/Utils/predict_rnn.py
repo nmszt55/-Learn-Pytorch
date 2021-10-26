@@ -47,7 +47,7 @@ def predict_rnn(prefix, num_chars, rnn, params, init_rnn_state, num_hiddens,
 
 def grad_clipping(params, theta, device):
     """梯度裁剪"""
-    norm = torch.tensor([0, 0], device=device)
+    norm = torch.tensor([0.0], device=device)
     for param in params:
         norm += (param.grad.data ** 2).sum()
     norm = norm.sqrt().item()
@@ -109,8 +109,8 @@ def train_and_predict_rnn(rnn, get_params, init_rnn_state, num_hiddens, vocab_si
                 for param in params:
                     param.grad.data.zero_()
             l.backward()
-            grad_clipping(params, clipping_theta, 1)
-            sgd(params, lr, batch_size)
+            grad_clipping(params, clipping_theta, device)
+            sgd(params, lr, 1)
             l_sum += l.item() * y.shape[0]
             n += y.shape[0]
 

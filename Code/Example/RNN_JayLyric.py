@@ -58,7 +58,7 @@ def test2():
     """训练 + 预测"""
     from Code.Utils.predict_rnn import train_and_predict_rnn
     num_epoch, num_steps, batch_size, lr, clipping_theta = 250, 35, 32, 1e2, 1e-2
-    pred_period, pred_len, prefixes = 50, 50, ["分开", "请你"]
+    pred_period, pred_len, prefixes = 50, 50, ["分开", "天晴"]
     train_and_predict_rnn(rnn, get_params, init_rnn_state, num_hidden, vocab_size, device, index_list,
                           idx2char, char2idx, True, num_epoch, num_steps, lr, clipping_theta,
                           batch_size, pred_period, pred_len, prefixes)
