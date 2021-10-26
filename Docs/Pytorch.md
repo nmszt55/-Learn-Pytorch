@@ -18,6 +18,49 @@
 
 说明：将一个tuple的维度进行转换
 
+view对张量的改变形状实际上并没有改变其真正在内存中的形状，而是改变了其访问规则，还是与原来的张量共享内存。
+
+
+
+**tensor.transpose(dim0, dim1)**
+
+说明：交换tensor的两个维度，交换dim0和dim1
+
+
+
+**tensor.contigurous()**
+
+说明：语义上是"连续的"的意思，经常与torch.permute()、torch.transpose()、torch.view()一起使用，这是因为
+
+pytorch与numpy在存储MxN的数组时，均是按照行优先将数组拉伸至一维存储，比如对于一个二维张量
+
+```python
+t = torch.tensor([[2, 1, 3], [4, 5, 9]])
+```
+
+在内存中实际上是[2,1,3,4,5,9]
+
+当我们使用transpose()或者permute()方法后，改变了张量的形状。
+
+![image-20211019002942888](src/Pytorch/image-20211019002942888.png)
+
+如果此时对该tensor使用view，回报错
+
+![image-20211019003025900](src/Pytorch/image-20211019003025900.png)
+
+这是因为改变了形状的tensor在内存中还是跟之前一样没有变更，此时如果拉伸，数字不连续，此时contiguous就派上用场了。
+
+我们执行该方法后，使用tensor.view(-1)可以查看其在内存中的存储方法
+
+```Python
+t3 = t2.contiguous()
+print(t3.view(-1))
+```
+
+![image-20211019003534541](src/Pytorch/image-20211019003534541.png)
+
+我们发现，**Contiguous函数实际上就是修改了tensor在内存中的存储顺序，使其更加连续**。
+
 
 
 ## 数据/设备转换
@@ -47,7 +90,7 @@ net(X.to("cuda"))
 
 
 
-## 使数据进行脱离
+## 使数据进行脱离计算图
 
 **tensor.detach_()**
 

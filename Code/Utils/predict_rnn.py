@@ -3,8 +3,10 @@
 """
 import torch
 import time
+import math
 
 from Code.Utils.one_hot import to_onehot
+from Code.Utils.sgd import sgd
 from Code.Utils.load_data_jay_lyrics import data_iter_random, data_iter_consecutive
 
 
@@ -44,6 +46,7 @@ def predict_rnn(prefix, num_chars, rnn, params, init_rnn_state, num_hiddens,
 
 
 def grad_clipping(params, theta, device):
+    """梯度裁剪"""
     norm = torch.tensor([0, 0], device=device)
     for param in params:
         norm += (param.grad.data ** 2).sum()
@@ -87,7 +90,7 @@ def train_and_predict_rnn(rnn, get_params, init_rnn_state, num_hiddens, vocab_si
         for x, y in data_iter:
             if is_random_iter:
                 # 随机采样的批次数据连续，所以每次训练完成之后重设初始状态
-                state = init_rnn_state()
+                state = init_rnn_state(batch_size, num_hiddens, device)
             else:
                 for s in state:
                     # 分离计算图，减轻训练复杂度
@@ -98,6 +101,22 @@ def train_and_predict_rnn(rnn, get_params, init_rnn_state, num_hiddens, vocab_si
             # 将list的所有tensor按照行为单位进行拼接
             output = torch.cat(output, dim=0)
             # 计算完成后，Y是一个长度为batch*num_steps的向量
-            Y = torch.transpose(y, 0, 1).contigurous().view(-1)
+            Y = torch.transpose(y, 0, 1).contiguous().view(-1)
             # 交叉熵损失计算误差
             l = loss(output, Y.long())
+            # 梯度清零
+            if params[0].grad is not None:
+                for param in params:
+                    param.grad.data.zero_()
+            l.backward()
+            grad_clipping(params, clipping_theta, 1)
+            sgd(params, lr, batch_size)
+            l_sum += l.item() * y.shape[0]
+            n += y.shape[0]
+
+        if (epoch + 1) % pred_period == 0:
+            print("epoch %d, perplexity %f, time %.2f sec" % (epoch, math.exp(l_sum / n), time.time()-start))
+            for prefix in prefixes:
+                print("-", predict_rnn(prefix, pred_len, rnn, params, init_rnn_state, num_hiddens, vocab_size,
+                                       device, idx_to_char, char_to_idx))
+

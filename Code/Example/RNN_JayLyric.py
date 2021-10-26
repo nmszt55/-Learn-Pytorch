@@ -5,6 +5,7 @@ import torch.nn.functional as F
 from torch import nn, optim
 from Code.Utils.load_data_jay_lyrics import load_data_jay_lyrics
 from Code.Utils.one_hot import to_onehot
+from Code.Utils.predict_rnn import predict_rnn
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
@@ -45,9 +46,23 @@ def rnn(input, state, params):
     return outputs, (H,)
 
 
-if __name__ == '__main__':
-    from Code.Utils.predict_rnn import predict_rnn
+def test1():
+    """不训练模型直接预测"""
     params = get_params()
     state = init_rnn_state(1, num_hidden, device)
     res = predict_rnn("分开", 10, rnn, params, init_rnn_state, num_hidden, vocab_size, device, idx2char, char2idx)
     print(res)
+
+
+def test2():
+    """训练 + 预测"""
+    from Code.Utils.predict_rnn import train_and_predict_rnn
+    num_epoch, num_steps, batch_size, lr, clipping_theta = 250, 35, 32, 1e2, 1e-2
+    pred_period, pred_len, prefixes = 50, 50, ["分开", "请你"]
+    train_and_predict_rnn(rnn, get_params, init_rnn_state, num_hidden, vocab_size, device, index_list,
+                          idx2char, char2idx, True, num_epoch, num_steps, lr, clipping_theta,
+                          batch_size, pred_period, pred_len, prefixes)
+
+
+if __name__ == '__main__':
+    test2()
