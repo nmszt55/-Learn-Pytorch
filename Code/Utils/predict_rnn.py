@@ -4,6 +4,7 @@
 import torch
 import time
 import math
+import numpy as np
 
 from Code.Utils.one_hot import to_onehot
 from Code.Utils.sgd import sgd
@@ -120,3 +121,63 @@ def train_and_predict_rnn(rnn, get_params, init_rnn_state, num_hiddens, vocab_si
                 print("-", predict_rnn(prefix, pred_len, rnn, params, init_rnn_state, num_hiddens, vocab_size,
                                        device, idx_to_char, char_to_idx))
 
+
+def predict_rnn_torch(prefix, num_chars, model, vocab_size, device, idx_to_char, char_to_idx):
+    """基于torch的Module进行预测"""
+    state = None
+    output = [char_to_idx[prefix[0]]]
+    for t in range(num_chars + len(prefix) - 1):
+        X = torch.tensor([output[-1]], device=device).view(1, 1)
+        if state is not None:
+            if isinstance(state, tuple):
+                state = (state[0].to(device), state[1].to(device))
+            else:
+                state = state.to(device)
+        Y, state = model(X, state)
+        if t < len(prefix)-1:
+            output.append(char_to_idx[prefix[t+1]])
+        else:
+            output.append(int(Y.argmax(dim=1).item()))
+    return "".join([idx_to_char[x] for x in output])
+
+
+def train_and_predict_rnn_torch(model, num_hidden, vocab_size, device, corpus_indices,
+                                idx_to_char, char_to_idx, num_epoch, num_steps, lr,
+                                clipping_theta, batch_size, pred_period, pred_len, prefixes):
+    loss = torch.nn.CrossEntropyLoss()
+    optimizer = torch.optim.Adam(model.parameters(), lr=lr)
+    model.to(device)
+    state = None
+    for epoch in range(num_epoch):
+        l_sum, n, start = 0.0, 0, time.time()
+        data_iter = data_iter_consecutive(corpus_indices, batch_size, num_steps, device)
+        for X, Y in data_iter:
+            if state is not None:
+                # 使用detach使隐藏状态从计算图分离,这是为了
+                # 使模型参数的梯度计算只依赖一次迭代的小批量序列，减小开销。
+                if isinstance(state, tuple):
+                    state = (state[0].detach(), state[1].detach())
+                else:
+                    state = state.detach()
+            output, state = model(X, state)
+
+            y = torch.transpose(Y, 0, 1).contiguous().view(-1)
+            l = loss(output, y.long())
+            optimizer.zero_grad()
+            l.backward()
+            # 梯度裁剪
+            grad_clipping(model.parameters(), clipping_theta, device)
+            # 执行梯度下降
+            optimizer.step()
+            l_sum += l.item() * y.shape[0]
+            n += y.shape[0]
+        try:
+            # 评估困惑度
+            perplexity = math.exp(l_sum / n)
+        except OverflowError:
+            perplexity = float("inf")
+        if (epoch + 1) % pred_period == 0:
+            print("epoch %d, the perplexity is %f, time %.2f" % (epoch, perplexity, time.time()-start))
+            for prefix in prefixes:
+                print(" - " + predict_rnn_torch(prefix, pred_len, model, vocab_size, device, idx_to_char,
+                                        char_to_idx))
