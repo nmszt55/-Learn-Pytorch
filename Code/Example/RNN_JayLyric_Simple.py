@@ -1,17 +1,11 @@
 """使用torch的api实现歌词预测"""
-import time
-import math
-import numpy as np
-import sys
 import torch
 
-from torch import nn, optim
-import torch.nn.functional as F
+from torch import nn
 
 from Code.Utils.load_data_jay_lyrics import load_data_jay_lyrics
-from Code.Utils.one_hot import to_onehot
-from Code.Utils.predict_rnn import predict_rnn_torch, train_and_predict_rnn_torch
-from Code.CNN.RNN import RNNModel
+from Code.Utils.predict_rnn import train_and_predict_rnn_torch
+from Code.RNN.RNN import RNNModel
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
