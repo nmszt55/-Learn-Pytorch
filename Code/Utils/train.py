@@ -40,3 +40,30 @@ def train(net, train_iter, test_iter, batch_size, optimizer, device, num_epoch):
         print("epoch %d, loss:%.3f, train acc:%.3f, test_acc:%.3f, time:%.1f sec" % (
             each+1, train_loss_sum/batch_count, train_acc_sum/n, test_acc, time.time()-start
         ))
+
+
+def train_img_aug(train_iter, test_iter, net, loss, optimizer, device, num_epoch):
+    net = net.to(device)
+    print("training on", device)
+    batch_count = 0
+    for epoch in range(num_epoch):
+        train_l_sum, train_acc_sum, n, start = 0.0, 0.0, 0, time.time()
+        for X, y in train_iter:
+            X = X.to(device)
+            y = y.to(device)
+            y_hat = net(X)
+            l = loss(y_hat, y)
+            optimizer.zero_grad()
+            l.backward()
+            optimizer.step()
+            train_l_sum += l.cpu().item()
+            train_acc_sum += (y_hat.argmax(dim=1) == y).sum().cpu().item()
+            n += y.shape[0]
+            batch_count += 1
+        test_acc = evaluate_acc(test_iter, net)
+        print("epoch %d, loss %.4f, train_acc %.3f, test_acc %.3f, time %.1f sec" % (epoch,
+                                                                                     train_l_sum/batch_count,
+                                                                                     train_acc_sum/n,
+                                                                                     test_acc,
+                                                                                     time.time() - start))
+

@@ -63,6 +63,52 @@ print(t3.view(-1))
 
 
 
+## 维度整理
+
+**tensor.permute(*args: List[int])**
+
+说明：将tensor按照给定的维度进行调整
+
+示例：tensor.permute(0,1,3,2)
+
+​	说明：tensor必须是一个4个维度的张量，执行后，张量将原有的维度的3,4维度进行互换。
+
+```python
+>>> x = torch.randn(2, 3, 5)
+>>> x.size()
+torch.Size([2, 3, 5])
+>>> torch.permute(x, (2, 0, 1)).size()
+torch.Size([5, 2, 3])
+```
+
+
+
+**torch.flatten(input, start_dim=0, end_dim=-1)**
+
+将张量转为1维
+
+参数：
+
+**start_dim**: 展开的开始维度
+
+**end_dim**：展开的结束维度。
+
+```python
+>>> t = torch.tensor([[[1, 2],
+...                    [3, 4]],
+...                   [[5, 6],
+...                    [7, 8]]])
+>>> torch.flatten(t)
+tensor([1, 2, 3, 4, 5, 6, 7, 8])
+>>> torch.flatten(t, start_dim=1)
+tensor([[1, 2, 3, 4],
+        [5, 6, 7, 8]])
+```
+
+
+
+
+
 ## 数据/设备转换
 
 **tensor.to(obj)**
@@ -235,4 +281,54 @@ optimizer = opt.SGD(net.parameters(), lr=0.01)
 ```Python
 optimizer = opt.Adam(net.parameters(), lr=0.01)
 ```
+
+
+
+
+
+
+
+# 异步
+
+## torch.cuda.synchronize(device=None)
+
+等待CUDA设备上运行的torch kernel运行完成。
+
+
+
+# TorchVision方法
+
+## 图像增广
+
+### torchvision.transforms.RandomResizedCrop(resize, scale, ratio)
+
+resize参数表示图像增广后的尺寸，可以是单个数字（表示宽为resize的正方形），也可以是2个元素的元组。
+
+scale参数表示从某个方向上裁剪的比例，一般是一个元组，例：(0.1, 1)表示随机裁剪10%-90%的区域
+
+ratio表示图片宽高比，一般是一个元组，例：(0.5, 2)表示随机从0.5-2选取宽高比进行拉伸。
+
+
+
+### torchvision.transforms.RandomHorizentalFlip()
+
+### torchvision.transforms.RandomVerticalFlip()
+
+上面2个transformer表示随机的水平翻转，垂直翻转图片。
+
+
+
+### torchvision.transforms.ColorJitter(brightness, contrast, saturation, hue)
+
+随机对图片的颜色进行调整
+
+* brightness:表示亮度
+* contrast:表示对比度
+* saturation:饱和度
+
+* hue:颜色
+
+这几个参数的值一般都设置为`0.5`
+
+
 
